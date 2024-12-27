@@ -57,6 +57,7 @@ export class JestRunner {
     argument?: Record<string, unknown> | string,
     options?: string[],
     collectCoverageFromCurrentFile?: boolean,
+    database?: string,
   ): Promise<void> {
     const currentTestName = typeof argument === 'string' ? argument : undefined;
     const editor = vscode.window.activeTextEditor;
@@ -85,7 +86,7 @@ export class JestRunner {
 
     const testName = currentTestName || this.findCurrentTestName(editor);
     const resolvedTestName = updateTestNameIfUsingProperties(testName);
-    const command = this.buildJestCommand(filePath, resolvedTestName, finalOptions);
+    const command = this.buildJestCommand(filePath, resolvedTestName, finalOptions, database);
 
     this.previousCommand = command;
 
@@ -144,7 +145,7 @@ export class JestRunner {
     await this.runExternalNativeTerminalCommand(this.commands);
   }
 
-  public async debugCurrentTest(currentTestName?: string): Promise<void> {
+  public async debugCurrentTest(currentTestName?: string, database?: string): Promise<void> {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
       return;
@@ -155,7 +156,7 @@ export class JestRunner {
     const filePath = editor.document.fileName;
     const testName = currentTestName || this.findCurrentTestName(editor);
     const resolvedTestName = updateTestNameIfUsingProperties(testName);
-    const debugConfig = this.getDebugConfig(filePath, resolvedTestName);
+    const debugConfig = this.getDebugConfig(filePath, resolvedTestName, database);
 
     await this.goToCwd();
     await this.executeDebugCommand({
@@ -184,7 +185,7 @@ export class JestRunner {
     this.previousCommand = debugCommand;
   }
 
-  private getDebugConfig(filePath: string, currentTestName?: string): vscode.DebugConfiguration {
+  private getDebugConfig(filePath: string, currentTestName?: string, database?: string): vscode.DebugConfiguration {
     const config: vscode.DebugConfiguration = {
       console: 'integratedTerminal',
       internalConsoleOptions: 'neverOpen',
@@ -195,6 +196,14 @@ export class JestRunner {
       cwd: this.config.cwd,
       ...this.config.debugOptions,
     };
+
+    if (database) {
+      if (!config.env) {
+        config.env = {};
+      }
+
+      config.env.PAYLOAD_DATABASE = database;
+    }
 
     config.args = config.args ? config.args.slice() : [];
 
@@ -225,9 +234,9 @@ export class JestRunner {
     return fullTestName ? escapeRegExp(fullTestName) : undefined;
   }
 
-  private buildJestCommand(filePath: string, testName?: string, options?: string[]): string {
+  private buildJestCommand(filePath: string, testName?: string, options?: string[], database?: string): string {
     const args = this.buildJestArgs(filePath, testName, true, options);
-    return `${this.config.jestCommand} ${args.join(' ')}`;
+    return `${database ? `PAYLOAD_DATABASE=${database} ` : ''}${this.config.jestCommand} ${args.join(' ')}`;
   }
 
   private buildJestArgs(filePath: string, testName: string, withQuotes: boolean, options: string[] = []): string[] {

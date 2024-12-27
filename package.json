@@ -1,7 +1,7 @@
 {
   "name": "vscode-jest-runner",
-  "displayName": "Jest Runner",
-  "description": "Simple way to run or debug a single (or multiple) tests from context-menu",
+  "displayName": "Jest Runner Payload Customized",
+  "description": "Simple way to run or debug a single (or multiple) tests from context-menu. Customized for the Payload monorepo.",
   "version": "0.4.74",
   "publisher": "firsttris",
   "author": "Tristan Teufel",
@@ -82,7 +82,9 @@
             "type": "array",
             "default": [
               "run",
-              "debug"
+              "runDatabase",
+              "debug",
+              "debugDatabase"
             ],
             "description": "Enable desired codeLens, possible value : 'run', 'debug', 'watch', 'coverage', 'current-test-coverage'. Defaults to ['run', 'debug'] ",
             "items": {
@@ -226,5 +228,6 @@
   },
   "dependencies": {
     "jest-editor-support": "^31.1.2"
-  }
+  },
+  "packageManager": "pnpm@9.15.1+sha512.1acb565e6193efbebda772702950469150cf12bcc764262e7587e71d19dc98a423dff9536e57ea44c49bdf790ff694e83c27be5faa23d67e0c033b583be4bfcf"
 }
